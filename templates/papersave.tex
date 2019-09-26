@@ -1,0 +1,217 @@
+\documentclass{article}
+
+\usepackage{fontspec}
+\usepackage{calc}
+\usepackage{geometry}
+\usepackage{graphicx}
+
+\geometry{
+  a4paper,
+  total={170mm,257mm},
+  left=20mm,
+  top=20mm,
+}
+
+\usepackage{fancyhdr}
+\renewcommand{\headrulewidth}{0pt}
+\usepackage{lastpage} 
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small \filename{} -- \leftmark\rightmark}
+\fancyhead[R]{\small Last modification: \lastmod}
+\fancyfoot[L]{\small \filename{} -- \leftmark\rightmark}
+\fancyfoot[C]{\thepage{} of \pageref{LastPage}\relax}
+\fancyfoot[R]{\small generated with papersave}
+
+
+\usepackage{xstring}
+%% https://tex.stackexchange.com/questions/171007/split-a-character-string-n-by-n
+%% Chunk HEX string in 8-chars sub strings
+\def\split#1#2{%
+  %% Split string into tempa and tempb 
+  \StrSplit{#2}{#1}\tempa\tempb%
+  %% Display tempa and empty it
+  \tempa\let\tempa\empty%
+  %
+  \unless\ifx\tempb\empty%
+  \def\tempa{%
+    %% The string separator is an empty rule
+    {\rule[0ex]{0.75em}{0pt}}%
+    \split{#1}\tempb%
+  }%
+  \fi%
+  \tempa%
+}%
+
+%\newfontfamily{\fixedw}[%
+\usepackage{libertine}
+\setmonofont[%
+  Path = ./,
+  UprightFont = *-light,
+  ItalicFont = *-lightitalic,
+  BoldFont = *-semibold,
+  BoldItalicFont = *-semibolditalic,
+  %% Mapping=mapping,
+  %% Scale=0.90,
+  %%FakeStretch=.88,
+]{iosevka}
+
+
+
+\def\filename{\code{\relax{}{{ .Filename }}\relax}}
+\def\lastmod{\relax{}{{ .Fileinfo.ModTime }}\relax}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\shasum}[1]{\code{#1}}
+\newcommand{\tech}[1]{\textit{#1}}
+
+
+\newcounter{linenumber}
+\newcommand{\hashline}[2]{%
+  \stepcounter{linenumber}%
+  \arabic{linenumber} & \code{\split{8}{#1}} & \code{#2}\\
+}
+
+
+
+\begin{document}
+\setlength{\parindent}{0cm}
+\begin{center}
+  {\Huge \code{\filename}\relax}%
+  \vspace{2em}
+  \begin{tabular}{ll}
+    File size & {{ .Fileinfo.Size }} bytes (last modified \lastmod)\\
+    File Sha256 & \shasum{\relax{}{{ .Checksum }}\relax}\\
+    Base64 Sha256 & \shasum{\relax{}{{ .Base64Checksum }}\relax}\\
+{{ if .Password }}
+    GPG AES256 password & \verb|{{ .Password }}| \\
+{{ end }}
+  \end{tabular}
+  \vspace{2em}
+\end{center}
+
+This is the paper backup of \filename. The original file has been compressed
+using \tech{gzip} then {{ if .Password }}encrypted with a \tech{gpg}
+compatible \tech{AES256} cipher and finally {{ end }}\tech{base64}
+encoded. The \tech{base64} stream has been split into {{ .Blocks | len }}
+blocks. For each block its QR-code and textual representations provided
+along with the block stream \tech{sha256} sum (one line without any blank
+character). The \tech{base64} encoded file can be restored by using any
+QR-code scanner or OCR tool. Yet the content can be manually typed. To help
+you each line can be verified using a \tech{IEEE-CRC32} checksum. As for the
+block \tech{sha256} ckecksum, the whole \tech{base64} stream checksum has
+been computed whitout any blank character.
+
+\vspace{1em}
+
+To compute a \tech{IEE-CRC32} sum:
+\begin{center}
+  \code{echo -n line | gzip | tail -c 8 | hexdump -n 4 -e '"0x\%.8x{\textbackslash}n"'}
+\end{center}
+
+To remove all blanks from the \tech{base64} stream you can run:
+\begin{center}
+  \code{cat \filename.b64 | sed 's/ *\#.*//;s/ +//;' | tr -d '{\textbackslash}n'}
+\end{center}
+
+
+The file restoration command (depending on your system the \code{-D} option
+can be \code{-d}) from the \tech{base64} file is:
+\begin{center}
+  \code{cat \filename.b64 | base64 -D{{ if .Password }} | gpg -d --batch --passphrase '}\verb|{{ .Password }}|\code{'{{ end }} | zcat > \filename }
+\end{center}
+
+{{/*
+The \tech{base64} data checksum has been computed on the \tech{base64}
+1-line stream without any blank character. The original file \tech{sha256} 
+
+To re
+Restauration procedude:
+\begin{itemize}
+\item The orignial file has been split in {{ .Blocks | len }} blocks. Each
+  QRCode and table represent one block. Regenerate the base64 file using
+  either the QRcodes or an OCR tool or manually.
+\item In case of manual typing each line can be checked with its IEEE-CRC32
+  code. The whole sha256 is provided for each block.
+\item IEEE-CRC32 can be checked using: \code{echo line | python3 -c 'import binascii;import sys;print("0x\%.8x" \% binascii.crc32(sys.stdin.buffer.read().strip()))'}
+\item Check the sha256 of the whole base64 restored file. This checksum was
+  computed as a one-line file without any blank character.
+\item The base64 is the representation of the original file compressed with
+  gzip.
+\item To extract the original file: \code{ cat \filename.b64 | zcat > \filename }
+\end{itemize}
+
+*/}}
+\vspace{1em}
+
+{{ define "block-lines" }}
+{{ block "block-qrcode" . }}{{ end }} 
+{{ $llines := (len .Lines) | Add -1 }}
+\vspace{0.5em}
+  \begin{tabular}{rll}
+{{/*    \multicolumn{3}{c}{Begin of block {{ .Number}}}\\ */}}
+    \textbf{Line} & \multicolumn{1}{c}{\textbf{Block {{ .Number}} (lines {{ .LineStart }} to {{ .LineEnd }}) base64 data}\relax} & \textbf{CRC32} \\
+{\rule[0ex]{0pt}{\normalbaselineskip}}
+{{-   range $idx, $l := .Lines }}
+{{ if (eq $idx $llines) }}
+\rule[-0.55\normalbaselineskip]{0pt}{\normalbaselineskip}
+{{ end }}
+\hashline{%
+  {{ $l.Data | String }}%
+}{%
+  {{ printf "0x%.8x" $l.CRC32 }}%
+}%    
+{{-    end }}
+{{/* \multicolumn{3}{c}{End of block {{ .Number}}} \\ */}}
+\multicolumn{3}{c}{\textbf{Sha256 of block {{ .Number}}:} \shasum{\relax{}{{ .Checksum }}\relax}}\\
+  \end{tabular}
+{{ end }}
+
+
+{{ define "block-qrcode" }}
+\frame{\includegraphics[height=7.5cm,keepaspectratio=true]{%
+    {{ .QRCodeFile }}%
+}}%
+{{ end }}
+
+\vspace{2em}
+
+\begin{center}
+  \textbf{\Large{\code{\filename}} starts here}
+\end{center}
+
+{{ $lblocks := len .Blocks }}
+{{ range .Blocks | Range2 }}
+{{-   $left := (index . 0) -}}
+{{-   $right := (index . 1) -}}
+\begin{center}
+
+{{/*
+  \begin{tabular}{cc}
+    {{ block "block-qrcode" $left }}{{ end }} &
+           {{-   if (ne 0 $right.Number) }}{{ block "block-qrcode" $right }}{{ end }}{{ end }} \\
+    \textbf{Block {{ $left.Number }} } &     {{-   if (ne 0 $right.Number) }}\textbf{Block {{ $right.Number }} }{{ end }} \\
+  \end{tabular}
+
+  \vspace{1em}
+*/}}
+{{ block "block-lines" $left }}{{ end }}
+{{-   if (ne 0 $right.Number) }}
+\markboth{Block {{ $left.Number}}\relax}{\relax{ }--- Block {{ $right.Number}}\relax}
+  \vspace{1em}
+{{ block "block-lines" $right }}{{ end }}
+{{ else }}
+\markboth{Block {{ $left.Number}}\relax}{}
+{{-   end }}
+
+\end{center}
+{{   if (not (or (eq $left.Number  $lblocks) (eq $right.Number $lblocks))) }}
+\newpage
+{{   end }}
+{{ end }}
+
+
+\begin{center}
+  \textbf{\Large{\code{\filename} ends here}}
+\end{center}
+\end{document}
