@@ -190,6 +190,11 @@ Some of them are more efficient than the others. Best results are with
 This depends on your printer and paper. However this can be stored for
 decades.
 
+*Why not Shamir's Shared Secret?*
+
+Obviously Shamir's Shared Secret is way more secure but is more complex to
+implement. However this can be an idea to extend *papersave* in the future.
+
 *Why a other tool?*
 
 Both [paperkey](https://www.jabberwocky.com/software/paperkey/) and
