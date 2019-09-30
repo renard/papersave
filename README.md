@@ -99,6 +99,34 @@ cat file.b64 | base64 -D | zcat
 Note on some system `-D` is `-d` for base64 option.
 
 
+### Manual typing
+
+If for some reasons neither OCR nor QR-Code worked, you still can manual
+type the data. This is a tedious subject to errors.
+
+To help you in this last-resort process the data is chunked into 8-line
+blocks. Each line is divided into 8 8-char blocks. On each line you can find
+its IEEE-CRC32. At the end of each 8-line block you will find its SHA256
+checksum.
+
+To compute a CRC32 you can run:
+
+```
+echo -n 'DATA' | gzip | tail -c 8 | hexdump -n 4 -e '"0x%.8x\n"'
+```
+
+To compute the 8-line block SHA256
+
+```
+cat file | sed 's/ *#.*//;s/ +//;' | tr -d '\n' | shasum -a 256
+```
+
+The *sed* command removes all comments and space, the *tr* suppresses all
+new lines. On some system you may need to use the *sha256sum* command
+instead of *shasum*.
+
+
+
 ## Copyright
 
 Copyright © 2019 Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>.
