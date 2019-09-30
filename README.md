@@ -39,9 +39,9 @@ provided by papersave.
 ## Motivation
 
 David Shaw wrote [paperkey](https://www.jabberwocky.com/software/paperkey/)
-to backup his GPG keys and Michael Mohr
-[paperback](http://ollydbg.de/Paperbak/). Papersave is a mix of those with
-additional features:
+to backup his GPG keys and Aleksa Sarai
+[paperback](https://github.com/cyphar/paperback). Papersave is a mix of
+those with additional features:
 
 * Can backup arbitrary file. However do not backup large files its primary
   goal was to backup ssh key (files smaller than 10k).
@@ -124,6 +124,91 @@ cat file | sed 's/ *#.*//;s/ +//;' | tr -d '\n' | shasum -a 256
 The *sed* command removes all comments and space, the *tr* suppresses all
 new lines. On some system you may need to use the *sha256sum* command
 instead of *shasum*.
+
+
+## Q&A
+
+
+*Do I need papersave to restore my data?*
+
+No. Any data can be restored using a standard unix tool-chain. This includes
+*base64*, *gpg* (only if you encrypted the original file using a symmetric
+encryption, no need for a key), *gzip* and *shasum* (only for data integrity
+checking).
+
+*Why do you print the encrypted password with the data?*
+
+Well this is a hard-copy of your sensible data (such as access to you backup
+system) that you need in case of real trouble. You want to recover the data
+by all means. If you are using you phone to scan the QR-Code your data may
+be sent to untrusted people. Having your data encrypted prevents any tier
+from snooping at them. Having a printed password prevents you from having to
+memorize it with the risk of a failing memory.
+
+Don't do stupid things with the hard-copy of your sensitive data. You should
+print it out and store the sheets of paper in a safe (or at least in a
+decent cache).
+
+*Why don't you use type-here-the-top-secure-encryption-algorithm?*
+
+Your data are meant to be recovered with a minimum of tools to install on
+your computer. They should not require fancy tool to read encrypted
+data. GPG is a standard tool with standard format. Nowadays AES-256-CBC is
+one of the most secure encryption algorithm provided by GPG out-of-the-box.
+
+*Why don't you just print the original file?*
+
+This method allows you to backup any file. If you do use some fancy encoding
+characters you still be able to recover them with plain ascii data.
+
+*Why using low redundancy QR-Code?*
+
+Adding redundancy increases QR-Code complexity and density. If you increase
+density you will need to use high resolution printer and scanner and may not
+be able to process the QR-Codes.
+
+Each block contain 512 characters. This is a trade off between QR-Code
+density and number of QR-Code to process. It worked fine with a laser
+printer and a 600dpi scanner.
+
+*Why QR-Code?*
+
+OCR is not always resilient and if you don't want to manually type the data
+you need an other way to retrieve it. Nowadays QR-Code allows the maximum
+amount of data among all 2d codes.
+
+Still High Capacity Color Barcode are claimed to store 3500 characters but
+requires color processing and are not a popular as QR-Codes.
+
+*Why 3 different QR-Code decoders?*
+
+Some of them are more efficient than the others. Best results are with
+`zbar`.
+
+*How long printed version will last?*
+
+This depends on your printer and paper. However this can be stored for
+decades.
+
+*Why a other tool?*
+
+Both [paperkey](https://www.jabberwocky.com/software/paperkey/) and
+[paperback](https://github.com/cyphar/paperback) are solving their authors
+problems. The original goal of this tool was to be able to get my backups
+back even if my secrets (ssh key and password) are lost.
+
+Best way is to have a backup on a digital medium such as a USB key. But if
+your medium is unreadable you need an other way to retrieve your data. Enter
+`papersave`.
+
+
+*Why Go?*
+
+Because I wanted to learn a new language.
+
+*Why XeLaTeX?*
+
+Why not? the render is just beautiful.
 
 
 
