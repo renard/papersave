@@ -22,7 +22,7 @@ type PaperSave struct {
 	Base64Checksum string
 	WorkDir string
 	Password string
-	options CreateOptions
+	Options CreateOptions
 	Blocks []Block
 }
 
@@ -37,6 +37,7 @@ var (
 type CreateOptions struct {
 	Filename string
 	Password string
+	ShowPassword bool
 	Encrypt bool
 	Keep bool
 }
@@ -47,7 +48,7 @@ func New(filename string, opts CreateOptions)  PaperSave {
 	papersave := PaperSave {
 		Filename: filename,
 		Fileinfo: info,
-		options: opts,
+		Options: opts,
 		WorkDir: fmt.Sprintf(workDir, filename)}
 
 	f, err := os.Open(filename)

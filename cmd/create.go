@@ -51,6 +51,8 @@ func init() {
 		Opts.Password, "Set encryption password.")
 	createCmd.Flags().BoolVarP(&Opts.Keep, "keep", "k",
 		Opts.Keep, "Keep build files.")
+	createCmd.Flags().BoolVarP(&Opts.ShowPassword, "show-password", "",
+		Opts.ShowPassword, "Show password in generated file.")
 	rootCmd.AddCommand(createCmd)
 }
 

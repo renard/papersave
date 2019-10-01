@@ -73,7 +73,7 @@ func (self PaperSave) WritePDF() {
 	}
 	os.Rename(fmt.Sprintf("%s/%s.pdf", self.WorkDir, self.Filename),
 		fmt.Sprintf("%s.pdf", self.Filename))
-	if !self.options.Keep {
+	if !self.Options.Keep {
 		os.RemoveAll(self.WorkDir)
 	}
 }

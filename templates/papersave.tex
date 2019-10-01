@@ -72,7 +72,9 @@
   \arabic{linenumber} & \code{\split{8}{#1}} & \code{#2}\\
 }
 
-
+{{ define "password" }}
+{{- if .Options.ShowPassword}}{{ .Password }}{{ else }}***{{ end -}}
+{{ end }}
 
 \begin{document}
 \setlength{\parindent}{0cm}
@@ -84,7 +86,7 @@
     File Sha256 & \shasum{\relax{}{{ .Checksum }}\relax}\\
     Base64 Sha256 & \shasum{\relax{}{{ .Base64Checksum }}\relax}\\
 {{ if .Password }}
-    GPG AES256 password & \verb|{{ .Password }}| \\
+    GPG AES256 password & \verb|{{ block "password" . }}{{ end }}| \\
 {{ end }}
   \end{tabular}
   \vspace{2em}
@@ -118,7 +120,7 @@ To remove all blanks from the \tech{base64} stream you can run:
 The file restoration command (depending on your system the \code{-D} option
 can be \code{-d}) from the \tech{base64} file is:
 \begin{center}
-  \code{cat \filename.b64 | base64 -D{{ if .Password }} | gpg -d --batch --passphrase '}\verb|{{ .Password }}|\code{'{{ end }} | zcat > \filename }
+  \code{cat \filename.b64 | base64 -D{{ if .Password }} | gpg -d --batch --passphrase '}\verb|{{ block "password" . }}{{ end }}|\code{'{{ end }} | zcat > \filename }
 \end{center}
 
 {{/*
