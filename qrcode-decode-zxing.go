@@ -1,25 +1,28 @@
 // -build ingore
 
-package papersave
+package main
 
 import (
-	// "fmt"
-
 	"image"
+	"os"
+
 	_ "image/jpeg"
 	_ "image/png"
-	"os"
+
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/multi/qrcode"
 )
 
-
-func decodeQRCodesZxing(path string) (data string, err error) {
+func decodeQRCodesZxing(path string, split bool) (data string, err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return
 	}
-	img, _, _ := image.Decode(file)
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return
+	}
+
 	// prepare BinaryBitmap
 	bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 	if err != nil {
@@ -30,13 +33,17 @@ func decodeQRCodesZxing(path string) (data string, err error) {
 	if err != nil {
 		return
 	}
-	for _, result := range(results) {
-		data += result.String()
+
+	for i := len(results) - 1; i >= 0; i-- {
+		data += results[i].String()
+		if split {
+			data += "\n"
+		}
 	}
 	return
 }
 
-
 func init() {
-	decodeFuncs[ZXING] = decodeQRCodesZxing
+	decodeFuncs[QRCODE_ZXING] = decodeQRCodesZxing
+	QRCodeDecoders["zxing"] = QRCODE_ZXING
 }

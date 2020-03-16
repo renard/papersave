@@ -1,7 +1,0 @@
-{{ range . -}}
-# Block   {{ .Number }}
-{{   range .Lines }}{{ (printf "%-64s"  (.Data | String )) }} # {{ (printf "%.8x"  (.CRC32  )) }}
-{{   end -}}
-# Sha256: {{ .Checksum }}
-
-{{ end -}}

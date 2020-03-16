@@ -1,36 +1,36 @@
 // -build ignore
 
-package papersave
+package main
 
 import (
-	// "fmt"
-
+	"errors"
 	"image"
+	"os"
+
 	_ "image/jpeg"
 	_ "image/png"
-	"errors"
-	"os"
+
 	"github.com/PeterCxy/gozbar"
 )
 
-func decodeQRCodesZbar(path string)  (data string, err error)  {
+func decodeQRCodesZbar(path string, split bool) (data string, err error) {
 	file, err := os.Open(path)
 	defer file.Close()
 	if err != nil {
 		return
 	}
-	
+
 	defer func() {
-        if r := recover(); r != nil {
+		if r := recover(); r != nil {
 			err = errors.New("Method zbar failed")
-        }
-    }()
+		}
+	}()
 
 	i, _, _ := image.Decode(file)
 	img := zbar.FromImage(i)
 
 	s := zbar.NewScanner()
-	s.SetConfig(0, zbar.CFG_ENABLE, 1)
+	s.SetConfig(0, zbar.CFG_ENABLE&zbar.CFG_POSITION, 1)
 	s.Scan(img)
 	defer s.Destroy()
 
@@ -39,13 +39,17 @@ func decodeQRCodesZbar(path string)  (data string, err error)  {
 	img.First().Each(func(str string) {
 		tmp = append(tmp, str)
 	})
-	for i := len(tmp)-1 ; i >= 0; i-- {
+
+	for i, _ := range tmp {
 		data += tmp[i]
+		if split {
+			data += "\n"
+		}
 	}
 	return
 }
 
-
 func init() {
-	decodeFuncs[ZBAR] = decodeQRCodesZbar
+	decodeFuncs[QRCODE_ZBAR] = decodeQRCodesZbar
+	QRCodeDecoders["zbar"] = QRCODE_ZBAR
 }

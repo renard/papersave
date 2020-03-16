@@ -1,12 +1,25 @@
-//go:generate $GOPATH/bin/implant -output internal/static.go -package papersave -input templates
-//go:generate go build
-//---go:generate $GOPATH/bin/esc -o internal/static.go -pkg papersave templates
+//go:generate go test -tags gencarton
+// +build !gencarton
+
 package main
 
-import(
-	"github.com/renard/papersave/cmd"
+import (
+// "fmt"
+// _ "github.com/renard/carton"
 )
 
-func main () {
-	cmd.Execute("1")
+func main() {
+	parseCli()
+	// fc, err := CartonFiles.GetFile("templates/txt/papersave.txt")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Print(string(fc))
+
+	// fc, err = CartonFiles.GetFile("templates/txt/papersave.txt2")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Print(string(fc))
+
 }

@@ -1,0 +1,16 @@
+# Share ID:             {{ .ID }}
+
+# Base64 SHA256:        {{ .B64.SHA256 }}
+# Base64 SHA1:          {{ .B64.SHA1 }}
+# Base64 MD5:           {{ .B64.MD5 }}
+
+{{   range .Blocks }}
+# Block ID:             {{ .ID }}  (lines {{ .LineMin }} to {{ .LineMax }})
+# SHA256:               {{ .Checksum.SHA256 }}
+# SHA1:                 {{ .Checksum.SHA1 }}
+# MD5:                  {{ .Checksum.MD5 }}
+{{-     range .Lines }}
+{{ printf "%.4d"  .Number }}   {{ printf "%-64s" .Content }}   0x{{ printf "%.8x" .CRC32 }}
+{{-     end }}
+{{   end -}}
+

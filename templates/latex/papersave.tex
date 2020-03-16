@@ -17,9 +17,9 @@
 \usepackage{lastpage} 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small \filename{} -- \leftmark\rightmark}
+\fancyhead[L]{\small \filename{} -- \shareid{} -- \leftmark\rightmark}
 \fancyhead[R]{\small Last modification: \lastmod}
-\fancyfoot[L]{\small \filename{} -- \leftmark\rightmark}
+\fancyfoot[L]{\small \filename{} -- \shareid{} -- \leftmark\rightmark}
 \fancyfoot[C]{\thepage{} of \pageref{LastPage}\relax}
 \fancyfoot[R]{\small generated with papersave}
 
@@ -57,9 +57,9 @@
 ]{iosevka}
 
 
-
-\def\filename{\code{\relax{}{{ .Filename }}\relax}}
-\def\lastmod{\relax{}{{ .Fileinfo.ModTime }}\relax}
+\def\filename{\code{\relax{}{{ .Basename }}\relax}}
+\def\lastmod{\relax{}{{ .LastChange }}\relax}
+\def\shareid{Share {{ .ID }}\relax}
 
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\shasum}[1]{\code{#1}}
@@ -73,7 +73,7 @@
 }
 
 {{ define "password" }}
-{{- if .Options.ShowPassword}}{{ .Password }}{{ else }}***{{ end -}}
+{{- if .ShowPassword}}{{ .Password }}{{ else }}***{{ end -}}
 {{ end }}
 
 \begin{document}
@@ -82,11 +82,14 @@
   {\Huge \code{\filename}\relax}%
   \vspace{2em}
   \begin{tabular}{ll}
-    File size & {{ .Fileinfo.Size }} bytes (last modified \lastmod)\\
-    File Sha256 & \shasum{\relax{}{{ .Checksum }}\relax}\\
-    Base64 Sha256 & \shasum{\relax{}{{ .Base64Checksum }}\relax}\\
+    File size & {{ .Filesize }} bytes (last modified \lastmod)\\
+    Original file \tech{sha256} & \shasum{\relax{}{{ .SourceFile.SHA256 }}\relax}\\
+    Binary file \tech{sha256} & \shasum{\relax{}{{ .SourceBinary.SHA256 }}\relax}\\
+    Binary file \tech{base64} \tech{sha256} & \shasum{\relax{}{{ .SourceBinaryB64.SHA256 }}\relax}\\
+    %% Share Sha256 & \shasum{\relax{}{{ .Binary.SHA256 }}\relax}\\
+    Share {{ .ID }} \tech{base64} \tech{sha256} & \shasum{\relax{}{{ .B64.SHA256 }}\relax}\\
 {{ if .Password }}
-    GPG AES256 password & \verb|{{ block "password" . }}{{ end }}| \\
+    GPG \tech{AES256} password & \verb|{{ block "password" . }}{{ end }}| \\
 {{ end }}
   \end{tabular}
   \vspace{2em}
@@ -94,28 +97,33 @@
 
 This is the paper backup of \filename. The original file has been compressed
 using \tech{gzip} then {{ if .Password }}encrypted with a \tech{gpg}
-compatible \tech{AES256} cipher and finally {{ end }}\tech{base64}
-encoded. The \tech{base64} stream has been split into {{ .Blocks | len }}
-blocks. For each block its QR-code and textual representations provided
-along with the block stream \tech{sha256} sum (one line without any blank
-character). The \tech{base64} encoded file can be restored by using any
-QR-code scanner or OCR tool. Yet the content can be manually typed. To help
-you each line can be verified using a \tech{IEEE-CRC32} checksum. As for the
-block \tech{sha256} ckecksum, the whole \tech{base64} stream checksum has
-been computed whitout any blank character.
+compatible \tech{AES256} cipher and finally {{ end }}encoded using
+\tech{base64}. The \tech{base64} stream has been split into {{.Blocks|len}}
+blocks. For each block its QR-code and textual representations are provided
+along with the block stream \tech{sha256} sum. The \tech{base64} encoded
+file can be restored by using any QR-code scanner or OCR tool. Yet the
+content can be manually typed. All you have to do is put all lines in a
+single text file respecting line breaks. To help you each line is divided in
+8 blocks of 8 characters (do not add blanks in the lines) and can be verified
+using a \tech{IEEE-CRC32} checksum.
 
 \vspace{1em}
 
-To compute a \tech{IEE-CRC32} sum:
+To compute a \tech{IEE-CRC32} sum of a single line (64 characters without blanks):
 \begin{center}
   \code{echo -n line | gzip | tail -c 8 | hexdump -n 4 -e '"0x\%.8x{\textbackslash}n"'}
 \end{center}
 
-To remove all blanks from the \tech{base64} stream you can run:
+To check one \tech{base64} block stream (8 lines) you can run (on some
+systems you might need to use \code{sha256sum}):
 \begin{center}
-  \code{cat \filename.b64 | sed 's/ *\#.*//;s/ +//;' | tr -d '{\textbackslash}n'}
+  \code{shasum -a 256 \filename-block-X.b64}
 \end{center}
 
+To group all blocks:
+\begin{center}
+  \code{cat \filename-block-*.b64 > \filename.b64}
+\end{center}
 
 The file restoration command (depending on your system the \code{-D} option
 can be \code{-d}) from the \tech{base64} file is:
@@ -151,28 +159,30 @@ Restauration procedude:
 {{ $llines := (len .Lines) | Add -1 }}
 \vspace{0.5em}
   \begin{tabular}{rll}
-{{/*    \multicolumn{3}{c}{Begin of block {{ .Number}}}\\ */}}
-    \textbf{Line} & \multicolumn{1}{c}{\textbf{Block {{ .Number}} (lines {{ .LineStart }} to {{ .LineEnd }}) base64 data}\relax} & \textbf{CRC32} \\
+{{/*    \multicolumn{3}{c}{Begin of block {{ .ID }}}\\ */}}
+\textbf{Line} & \multicolumn{1}{c}{\textbf{Block {{ .ID }} (lines {{ .LineMin }} to {{ .LineMax }}) base64 data}\relax} & \textbf{CRC32} \\
+\hline
 {\rule[0ex]{0pt}{\normalbaselineskip}}
 {{-   range $idx, $l := .Lines }}
 {{ if (eq $idx $llines) }}
 \rule[-0.55\normalbaselineskip]{0pt}{\normalbaselineskip}
 {{ end }}
 \hashline{%
-  {{ $l.Data | String }}%
+  {{ $l.Content | String }}%
 }{%
   {{ printf "0x%.8x" $l.CRC32 }}%
 }%    
 {{-    end }}
-{{/* \multicolumn{3}{c}{End of block {{ .Number}}} \\ */}}
-\multicolumn{3}{c}{\textbf{Sha256 of block {{ .Number}}:} \shasum{\relax{}{{ .Checksum }}\relax}}\\
+{{/* \multicolumn{3}{c}{End of block {{ .ID }}} \\ */}}
+\hline
+\multicolumn{3}{c}{\rule[0.15\normalbaselineskip]{0pt}{\normalbaselineskip}\textbf{Sha256 of block {{ .ID }}:} \shasum{\relax{}{{ .Checksum.SHA256 }}\relax}}\\
   \end{tabular}
 {{ end }}
 
 
 {{ define "block-qrcode" }}
-\frame{\includegraphics[height=7.5cm,keepaspectratio=true]{%
-    {{ .QRCodeFile }}%
+\frame{\includegraphics[height=6.5cm,keepaspectratio=true]{%
+    {{ .QRcode }}%
 }}%
 {{ end }}
 
@@ -188,26 +198,17 @@ Restauration procedude:
 {{-   $right := (index . 1) -}}
 \begin{center}
 
-{{/*
-  \begin{tabular}{cc}
-    {{ block "block-qrcode" $left }}{{ end }} &
-           {{-   if (ne 0 $right.Number) }}{{ block "block-qrcode" $right }}{{ end }}{{ end }} \\
-    \textbf{Block {{ $left.Number }} } &     {{-   if (ne 0 $right.Number) }}\textbf{Block {{ $right.Number }} }{{ end }} \\
-  \end{tabular}
-
-  \vspace{1em}
-*/}}
 {{ block "block-lines" $left }}{{ end }}
-{{-   if (ne 0 $right.Number) }}
-\markboth{Block {{ $left.Number}}\relax}{\relax{ }--- Block {{ $right.Number}}\relax}
+{{-   if (ne 0 $right.ID) }}
+\markboth{Block {{ $left.ID}}\relax}{\relax{ }--- Block {{ $right.ID}}\relax}
   \vspace{1em}
 {{ block "block-lines" $right }}{{ end }}
 {{ else }}
-\markboth{Block {{ $left.Number}}\relax}{}
+\markboth{Block {{ $left.ID}}\relax}{}
 {{-   end }}
 
 \end{center}
-{{   if (not (or (eq $left.Number  $lblocks) (eq $right.Number $lblocks))) }}
+{{   if (not (or (eq $left.ID  $lblocks) (eq $right.ID $lblocks))) }}
 \newpage
 {{   end }}
 {{ end }}

@@ -1,0 +1,32 @@
+# Filename: {{ .Basename }} ({{ .Filesize }} bytes)
+# Last change: {{ .LastChange }}
+# Password: {{ .Password }}
+
+# Source File SHA256:   {{ .SourceFile.SHA256 }}
+# Source File SHA1:     {{ .SourceFile.SHA1 }}
+# Source File MD5:      {{ .SourceFile.MD5 }}
+#
+# Source Binary SHA256: {{ .SourceBinary.SHA256 }}
+# Source Binary SHA1:   {{ .SourceBinary.SHA1 }}
+# Source Binary MD5:    {{ .SourceBinary.MD5 }}
+
+# Share ID:             {{ .ID }}
+
+# Binary SHA256:        {{ .Binary.SHA256 }}
+# Binary SHA1:          {{ .Binary.SHA1 }}
+# Binary MD5:           {{ .Binary.MD5 }}
+#
+# Base64 SHA256:        {{ .B64.SHA256 }}
+# Base64 SHA1:          {{ .B64.SHA1 }}
+# Base64 MD5:           {{ .B64.MD5 }}
+
+{{   range .Blocks }}
+# Block ID:             {{ .ID }}  (lines {{ .LineMin }} to {{ .LineMax }})
+# SHA256:               {{ .Checksum.SHA256 }}
+# SHA1:                 {{ .Checksum.SHA1 }}
+# MD5:                  {{ .Checksum.MD5 }}
+{{-     range .Lines }}
+{{ printf "%.4d"  .Number }}   {{ printf "%-64s" .Content }}   0x{{ printf "%.8x" .CRC32 }}
+{{-     end }}
+{{   end -}}
+
