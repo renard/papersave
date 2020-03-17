@@ -130,6 +130,32 @@ cat vagrant.share-1.b64 | base64 -D | zcat
 
 Note on some system `-D` is `-d` for base64 option.
 
+### Shared secret
+
+If you want to split your secrets in several shares you can do:
+
+```
+papersave create --shares 3 --thresholds 2 vagrant
+```
+
+This will require at least 2 shares of 3 to regenerate the file.
+
+To regenerate the original file you need to combine the base64 files:
+
+```
+papersave combine --wrap vagrant.share-*.b64 > vagrant.b64
+```
+
+You can check the `vagrant.b64` *sha256* sum and compare it with the *Binary
+le base64 sha256* from the paper backup.
+
+
+Then extract the data:
+
+```
+cat vagrant.b64 | base64 -D | zcat
+```
+
 
 ### Manual typing
 
