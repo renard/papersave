@@ -50,8 +50,30 @@ those with additional features:
 * Can encrypt the data using a AES-256-CBC (suitable for gpg) cipher to
   allow restoration over untrusted networks (especially for online QR-Code
   scanners).
-* Only use standard a tool-chain to restore data (gpg, gzip, base64).
+* Secret can be split into several shares using
+  [Shamir Shared Secret](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
+* Only use standard a tool-chain to restore data: gpg, gzip, base64 (except
+  if Shamir shared secret is used).
 * Uses SHA256 checksums and CRC32 for data integrity.
+
+### Typical use case
+
+I use [KeePassXC](https://keepassxc.org/) to store all my passwords. It
+encrypts everything using strong and modern cryptography. An additional key
+file can be used to increase the password security.
+
+With this strong security setting the password database can be backed up to
+an untrusted location (choice is yours) as long as the additional key file
+is *NOT* stored to that location too.
+
+You can create an archive with the additional key (and the database password
+if you do not trust your memory) and output *papersave* generated content is
+a safe place.
+
+Be careful though since with single sheet of paper anyone can access to all
+your passwords. Store this sheet of paper in a safe deposit box. Don't do
+stupid things such as archiving it in a pile of papers on your desk.
+
 
 ## Build
 
@@ -64,36 +86,46 @@ go build
 
 ## Usage
 
+The following example shows how to backup the
+[vagrant insecure ssh key](https://github.com/hashicorp/vagrant/tree/master/keys).
+
 To backup a file:
 
 ```
-papersave create -e vagrant
+papersave create -e --show-password vagrant
 ```
 
 To restore the base64 data from a scanned PDF:
 
 ```
-convert file.pdf file.jpg
-papersave decode -d file-*.jpg
+convert vagrant.share-1.pdf vagrant.share-1.jpg
+papersave decode --split-blocks vagrant.share-1*.jpg > vagrant.share-1.b64
 ```
 
-If the default decoder does not work properly you can try one of those
-options:
+Please note that block ordering is not garanted if several QRcodes are on
+the same image. The `--split-blocks` option helps you to reorder blocks.
+Sometimes only one QRcode is detected. To prevent such errors, using only
+one QRcode per file is highly recommended.
 
-* `-m zxing`
-* `-m zbar`
-* `-m grcode`
+You can check your base64 generated file:
+
+``` papersave check vagrant.share-1.b64 ```
+
+Make sure all checksums are correct. To help you with this you can check the
+*Binary file base64 sha256* for the whole file, or you can check each blocks
+*sha256* sums and you can check each line CRC32 integrity.
+
 
 To convert the base64 data to your original file:
 
 ```
-cat file.b64 | base64 -D | gpg -d --batch --passphrase PASS | zcat
+cat vagrant.share-1.b64 | base64 -D | gpg -d --batch --passphrase PASS | zcat
 ```
 
 Or if you did not used encryption:
 
 ```
-cat file.b64 | base64 -D | zcat
+cat vagrant.share-1.b64 | base64 -D | zcat
 ```
 
 Note on some system `-D` is `-d` for base64 option.
@@ -115,35 +147,32 @@ To compute a CRC32 you can run:
 echo -n 'DATA' | gzip | tail -c 8 | hexdump -n 4 -e '"0x%.8x\n"'
 ```
 
-To compute the 8-line block SHA256
-
-```
-cat file | sed 's/ *#.*//;s/ +//;' | tr -d '\n' | shasum -a 256
-```
-
-The *sed* command removes all comments and space, the *tr* suppresses all
-new lines. On some system you may need to use the *sha256sum* command
-instead of *shasum*.
-
+You can also use *papersave* `check` command which removes all non-relevant
+characters and format the base64 file as it is on your paper backup.
 
 ## Q&A
 
 
 *Do I need papersave to restore my data?*
 
-No. Any data can be restored using a standard unix tool-chain. This includes
-*base64*, *gpg* (only if you encrypted the original file using a symmetric
-encryption, no need for a key), *gzip* and *shasum* (only for data integrity
-checking).
+No if you don't use Shamir shared secret. Any data can be restored using a
+standard unix tool-chain. This includes *base64*, *gpg* (only if you
+encrypted the original file using a symmetric encryption, no need for a
+key), *gzip* and *shasum* (only for data integrity checking).
+
+If you do use Shamir shared secret you will need papersave or combine all
+shares yourself. You will need *shamir* package from
+[hashicorp vault](https://github.com/hashicorp/vault/tree/master/shamir).
+
 
 *Why do you print the encrypted password with the data?*
 
-Well this is a hard-copy of your sensible data (such as access to you backup
-system) that you need in case of real trouble. You want to recover the data
-by all means. If you are using you phone to scan the QR-Code your data may
-be sent to untrusted people. Having your data encrypted prevents any tier
-from snooping at them. Having a printed password prevents you from having to
-memorize it with the risk of a failing memory.
+Well this is a hard-copy of your sensible data (such as access to your
+backup system) that you need in case of real trouble. You want to recover
+this data by all means. If you are using your phone to scan the QR-Code your
+data may be sent to untrusted people. Having your data encrypted prevents
+any tier from snooping at them. Having a printed password prevents you from
+having to memorize it with the risk of a failing memory.
 
 Don't do stupid things with the hard-copy of your sensitive data. You should
 print it out and store the sheets of paper in a safe (or at least in a
@@ -152,7 +181,7 @@ decent cache).
 *Why don't you use type-here-the-top-secure-encryption-algorithm?*
 
 Your data are meant to be recovered with a minimum of tools to install on
-your computer. They should not require fancy tool to read encrypted
+your computer. This should not require fancy tool to read encrypted
 data. GPG is a standard tool with standard format. Nowadays AES-256-CBC is
 one of the most secure encryption algorithm provided by GPG out-of-the-box.
 
@@ -190,11 +219,6 @@ Some of them are more efficient than the others. Best results are with
 This depends on your printer and paper. However this can be stored for
 decades.
 
-*Why not Shamir's Shared Secret?*
-
-Obviously Shamir's Shared Secret is way more secure but is more complex to
-implement. However this can be an idea to extend *papersave* in the future.
-
 *Why a other tool?*
 
 Both [paperkey](https://www.jabberwocky.com/software/paperkey/) and
@@ -219,6 +243,6 @@ Why not? the render is just beautiful.
 
 ## Copyright
 
-Copyright © 2019 Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>.
+Copyright © 2019-2020 Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>.
 
 See [LICENSE](LICENSE).
