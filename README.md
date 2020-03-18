@@ -179,7 +179,7 @@ characters and format the base64 file as it is on your paper backup.
 ## Q&A
 
 
-*Do I need papersave to restore my data?*
+### Do I need papersave to restore my data?
 
 No if you don't use Shamir shared secret. Any data can be restored using a
 standard unix tool-chain. This includes *base64*, *gpg* (only if you
@@ -191,7 +191,7 @@ shares yourself. You will need *shamir* package from
 [hashicorp vault](https://github.com/hashicorp/vault/tree/master/shamir).
 
 
-*Why do you print the encrypted password with the data?*
+### Why do you print the encrypted password with the data?
 
 Well this is a hard-copy of your sensible data (such as access to your
 backup system) that you need in case of real trouble. You want to recover
@@ -204,19 +204,19 @@ Don't do stupid things with the hard-copy of your sensitive data. You should
 print it out and store the sheets of paper in a safe (or at least in a
 decent cache).
 
-*Why don't you use type-here-the-top-secure-encryption-algorithm?*
+### Why don't you use type-here-the-top-secure-encryption-algorithm?
 
 Your data are meant to be recovered with a minimum of tools to install on
 your computer. This should not require fancy tool to read encrypted
 data. GPG is a standard tool with standard format. Nowadays AES-256-CBC is
 one of the most secure encryption algorithm provided by GPG out-of-the-box.
 
-*Why don't you just print the original file?*
+### Why don't you just print the original file?
 
 This method allows you to backup any file. If you do use some fancy encoding
 characters you still be able to recover them with plain ascii data.
 
-*Why using low redundancy QR-Code?*
+### Why using low redundancy QR-Code?
 
 Adding redundancy increases QR-Code complexity and density. If you increase
 density you will need to use high resolution printer and scanner and may not
@@ -226,7 +226,7 @@ Each block contain 512 characters. This is a trade off between QR-Code
 density and number of QR-Code to process. It worked fine with a laser
 printer and a 600dpi scanner.
 
-*Why QR-Code?*
+### Why QR-Code?
 
 OCR is not always resilient and if you don't want to manually type the data
 you need an other way to retrieve it. Nowadays QR-Code allows the maximum
@@ -235,17 +235,17 @@ amount of data among all 2d codes.
 Still High Capacity Color Barcode are claimed to store 3500 characters but
 requires color processing and are not a popular as QR-Codes.
 
-*Why 3 different QR-Code decoders?*
+### Why 3 different QR-Code decoders?
 
 Some of them are more efficient than the others. Best results are with
 `zbar`.
 
-*How long printed version will last?*
+### How long printed version will last?
 
 This depends on your printer and paper. However this can be stored for
 decades.
 
-*Why a other tool?*
+### Why a other tool?
 
 Both [paperkey](https://www.jabberwocky.com/software/paperkey/) and
 [paperback](https://github.com/cyphar/paperback) are solving their authors
@@ -256,12 +256,11 @@ Best way is to have a backup on a digital medium such as a USB key. But if
 your medium is unreadable you need an other way to retrieve your data. Enter
 `papersave`.
 
-
-*Why Go?*
+### Why Go?
 
 Because I wanted to learn a new language.
 
-*Why XeLaTeX?*
+### Why XeLaTeX?
 
 Why not? the render is just beautiful.
 
