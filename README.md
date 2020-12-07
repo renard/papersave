@@ -74,6 +74,11 @@ Be careful though since with single sheet of paper anyone can access to all
 your passwords. Store this sheet of paper in a safe deposit box. Don't do
 stupid things such as archiving it in a pile of papers on your desk.
 
+Warning: Do not use a photocopier to duplicate your data since some
+photocopiers may use pattern recognition alter the data and compromise
+your secrets. See this
+[article](http://www.dkriesel.com/en/blog/2013/0802_xerox-workcentres_are_switching_written_numbers_when_scanning)
+and [video (in German)](https://www.youtube.com/watch?v=7FeqF1-Z1g0).
 
 ## Build
 
