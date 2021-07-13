@@ -10,11 +10,11 @@ See [](examples) directory and [result](examples/vagrant.pdf).
 This piece of software is a proof of concept. Its design is subject to
 change in the future.
 
-The code is not yet bullet-proof and need some improvements.
+The code is not yet bullet-proof and needs some improvements.
 
 Use with caution.
 
-Any suggestion are welcome.
+Any suggestions are welcome.
 
 
 ## Requirements
@@ -43,8 +43,8 @@ to backup his GPG keys and Aleksa Sarai
 [paperback](https://github.com/cyphar/paperback). Papersave is a mix of
 those with additional features:
 
-* Can backup arbitrary file. However do not backup large files its primary
-  goal was to backup ssh key (files smaller than 10k).
+* Can backup arbitrary files. However do not backup large files; its primary
+  goal was to backup ssh keys (files smaller than 10k).
 * Content agnostic: data is compressed and base64 encoded.
 * Suitable for QR-Code, OCR or manual typing.
 * Can encrypt the data using a AES-256-CBC (suitable for gpg) cipher to
@@ -52,7 +52,7 @@ those with additional features:
   scanners).
 * Secret can be split into several shares using
   [Shamir Shared Secret](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing).
-* Only use standard a tool-chain to restore data: gpg, gzip, base64 (except
+* Only uses standard tool-chains to restore data: gpg, gzip, base64 (except
   if Shamir shared secret is used).
 * Uses SHA256 checksums and CRC32 for data integrity.
 
@@ -67,11 +67,11 @@ an untrusted location (choice is yours) as long as the additional key file
 is *NOT* stored to that location too.
 
 You can create an archive with the additional key (and the database password
-if you do not trust your memory) and output *papersave* generated content is
+if you do not trust your memory) and output *papersave* generated content to
 a safe place.
 
-Be careful though since with single sheet of paper anyone can access to all
-your passwords. Store this sheet of paper in a safe deposit box. Don't do
+Be careful though since with single sheet of paper anyone can access all
+your passwords. Store this sheet of paper in a safe-deposit box. Don't do
 stupid things such as archiving it in a pile of papers on your desk.
 
 Warning: Do not use a photocopier to duplicate your data since some
@@ -133,7 +133,7 @@ Or if you did not used encryption:
 cat vagrant.share-1.b64 | base64 -D | zcat
 ```
 
-Note on some system `-D` is `-d` for base64 option.
+Note on some systems `-D` is `-d` for the base64 decode option.
 
 ### Shared secret
 
@@ -164,8 +164,8 @@ cat vagrant.b64 | base64 -D | zcat
 
 ### Manual typing
 
-If for some reasons neither OCR nor QR-Code worked, you still can manual
-type the data. This is a tedious subject to errors.
+If for some reasons neither OCR nor QR-Code worked, you still can manually
+type the data. This is tedious and prone to errors.
 
 To help you in this last-resort process the data is chunked into 8-line
 blocks. Each line is divided into 8 8-char blocks. On each line you can find
@@ -198,7 +198,7 @@ shares yourself. You will need *shamir* package from
 
 ### Why do you print the encrypted password with the data?
 
-Well this is a hard-copy of your sensible data (such as access to your
+Well this is a hard-copy of your sensitive data (such as access to your
 backup system) that you need in case of real trouble. You want to recover
 this data by all means. If you are using your phone to scan the QR-Code your
 data may be sent to untrusted people. Having your data encrypted prevents
@@ -207,7 +207,7 @@ having to memorize it with the risk of a failing memory.
 
 Don't do stupid things with the hard-copy of your sensitive data. You should
 print it out and store the sheets of paper in a safe (or at least in a
-decent cache).
+decent hiding place).
 
 ### Why don't you use type-here-the-top-secure-encryption-algorithm?
 
@@ -227,7 +227,7 @@ Adding redundancy increases QR-Code complexity and density. If you increase
 density you will need to use high resolution printer and scanner and may not
 be able to process the QR-Codes.
 
-Each block contain 512 characters. This is a trade off between QR-Code
+Each block contains 512 characters. This is a trade off between QR-Code
 density and number of QR-Code to process. It worked fine with a laser
 printer and a 600dpi scanner.
 
@@ -250,12 +250,12 @@ Some of them are more efficient than the others. Best results are with
 This depends on your printer and paper. However this can be stored for
 decades.
 
-### Why a other tool?
+### Why another tool?
 
 Both [paperkey](https://www.jabberwocky.com/software/paperkey/) and
-[paperback](https://github.com/cyphar/paperback) are solving their authors
-problems. The original goal of this tool was to be able to get my backups
-back even if my secrets (ssh key and password) are lost.
+[paperback](https://github.com/cyphar/paperback) are solving their authors'
+problems. The original goal of this tool was to be able to retrieve my backups
+even if my secrets (ssh key and password) are lost.
 
 Best way is to have a backup on a digital medium such as a USB key. But if
 your medium is unreadable you need an other way to retrieve your data. Enter
